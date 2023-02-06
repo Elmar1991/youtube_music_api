@@ -1,6 +1,7 @@
 from ytmusicapi import YTMusic
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api
+from pytube import YouTube
 import json
 
 # YTMusic.setup(filepath="headers_auth.json")
@@ -8,6 +9,14 @@ app = Flask(__name__)
 
 
 ytmusic = YTMusic('headers_auth.json')
+@app.route('/stream/<videoId>', methods=['GET'])
+def stream(videoId):
+    yt = YouTube('https://www.youtube.com/watch?v='+videoId)
+    audio_streams = yt.streams.filter(only_audio=True)
+    best_audio_stream = sorted(
+        audio_streams, key=lambda stream: stream.abr, reverse=True)[0]
+    best_audio_stream_url = best_audio_stream.url
+    return best_audio_stream_url
 
 
 @app.route('/', methods=['GET'])
